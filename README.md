@@ -43,23 +43,18 @@ To use the Strava Activity Poster Generator, follow these steps:
 
 2. Copy the GPX files exported from Strava to the "GPX" directory of the project.
 
-   ```bash
-   cp /path/to/exported/gpx/files/*.gpx /path/to/strava-activity-poster-generator/GPX/
-   ```
 
 3. Move the `activities.csv` file exported from Strava to the root folder of the project.
 
-   ```bash
-   mv /path/to/exported/activities.csv /path/to/strava-activity-poster-generator/
-   ```
 
 4. Run main script
 
    ```bash
    python3 main.py
    ```
+You may want to modify the number of columns and rows of the poster (at the end of the code, planche(6,10)).
 
-6. The generated posters will be saved in the project directory.
+5. The generated posters will be saved in the project directory, individual images in the IMAGES directory.
 
 ## Contributing
 
