@@ -38,7 +38,7 @@ To use the Strava Activity Poster Generator, follow these steps:
 1. Clone this repository to your local machine.
 
    ```bash
-   git clone https://github.com/your-username/strava-activity-poster-generator.git
+   git clone https://github.com/Pataclop/GPX.git
    ```
 
 2. Copy the GPX files exported from Strava to the "GPX" directory of the project.
