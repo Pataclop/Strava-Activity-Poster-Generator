@@ -163,7 +163,7 @@ def lire_balise_type_gpx(nom_fichier):
         return None
 
 def type_image(type):
-    if type == 9:
+    if type == "9":
         run = Image.open("run.png")
         return run
     
@@ -283,17 +283,20 @@ def planche(colones, lignes):
 
     cv2.imwrite("planche.png", board)
 
+
+def create_all(nom):
+    img1 = plot_gpx(repertoire + "/" + nom_fichier, lire_activite("Distance", nom_fichier[:-4]))
+    img2 = activity_data_image(lire_activite("Date de l'activité", nom_fichier[:-4]), lire_activite("Distance", nom_fichier[:-4]), lire_activite("Durée de déplacement", nom_fichier[:-4]), lire_activite("Dénivelé positif", nom_fichier[:-4]), lire_activite("Vitesse moyenne", nom_fichier[:-4]))
+    img3 = type_image(lire_balise_type_gpx(repertoire+"/" + nom_fichier))
+    im1 = resize_image(img1,1000, 900)
+    im3 = resize_image(img3,75, 75)
+    combine_images(im1, img2, im3, "IMAGES/"+nom_fichier[:-4]+".png")
+    
 repertoire = "GPX"
 
 for nom_fichier in os.listdir(repertoire):
     if nom_fichier.endswith(".gpx"):
-        img1 = plot_gpx(repertoire + "/" + nom_fichier, lire_activite("Distance", nom_fichier[:-4]))
-        img2 = activity_data_image(lire_activite("Date de l'activité", nom_fichier[:-4]), lire_activite("Distance", nom_fichier[:-4]), lire_activite("Durée de déplacement", nom_fichier[:-4]), lire_activite("Dénivelé positif", nom_fichier[:-4]), lire_activite("Vitesse moyenne", nom_fichier[:-4]))
-        img3 = type_image(lire_balise_type_gpx(repertoire+"/" + nom_fichier))
-        
-        im1 = resize_image(img1,1000, 900)
-        im3 = resize_image(img3,75, 75)
-
-        combine_images(im1, img2, im3, "IMAGES/"+nom_fichier[:-4]+".png")
+        create_all(nom_fichier)
+        print(nom_fichier)
 
 planche(6,10)
