@@ -1,0 +1,8 @@
+
+*.gpx
+IMAGES/*
+GPX/*
+*.png
+image sample/.DS_Store
+.DS_Store
+activities.csv
