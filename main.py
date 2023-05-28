@@ -7,13 +7,9 @@ import csv
 import numpy as np
 import cv2
 
-img_speed = Image.open("speed.png")
-img_climb = Image.open("climb.png")
-img_run = Image.open("run.png")
-img_time = Image.open("time.png")
-img_climb = Image.open("climb.png")
+SIZE = 100
 
-
+Image.MAX_IMAGE_PIXELS = None
 
 
 month_mapping = {
@@ -79,8 +75,8 @@ def plot_gpx(gpx_file, dist):
     max_lon = max(longitudes)
 
     # Calculer la taille de l'image
-    image_width = int((max_lon - min_lon) * 100000 +300)  # Conversion de degrés en 1/100000 degré
-    image_height = int((max_lat - min_lat) * 100000 +300)  # Conversion de degrés en 1/100000 degré
+    image_width = int((max_lon - min_lon) * 2000*SIZE +6*SIZE)  # Conversion de degrés en 1/100000 degré
+    image_height = int((max_lat - min_lat) * 2000*SIZE +6*SIZE)  # Conversion de degrés en 1/100000 degré
 
     # Créer l'image
     image = Image.new('RGB', (image_width, image_height), (0, 0, 0))
@@ -89,10 +85,10 @@ def plot_gpx(gpx_file, dist):
     # Dessiner le tracé
     couleur = generate_random_color()
     for i in range(len(latitudes) - 1):
-        x1 = int((longitudes[i] - min_lon) * 100000+100)
-        y1 = int((latitudes[i] - min_lat) * 100000+100)
-        x2 = int((longitudes[i + 1] - min_lon) * 100000+100)
-        y2 = int((latitudes[i + 1] - min_lat) * 100000+100)
+        x1 = int((longitudes[i] - min_lon) * 2000*SIZE+2*SIZE)
+        y1 = int((latitudes[i] - min_lat) * 2000*SIZE+2*SIZE)
+        x2 = int((longitudes[i + 1] - min_lon) * 2000*SIZE+2*SIZE)
+        y2 = int((latitudes[i + 1] - min_lat) * 2000*SIZE+2*SIZE)
         draw.line((x1, y1, x2, y2), fill=couleur, width=int(d)*3)
 
     # Enregistrer l'image en PNG
@@ -111,11 +107,11 @@ def affichage_heure_minutes(secondes):
 
 def activity_data_image(date, distance, duree, montee, speed):
 
-    image_width = 1000
-    image_height = 100
+    image_width = 29*SIZE
+    image_height = 2*SIZE
     background_color = (0,0,0)
     text_color = (255, 255, 255)
-    font_size = 40
+    font_size = int(0.8*SIZE)
     font_path = "Bangers-Regular.ttf"  # Chemin vers votre fichier de police TrueType (TTF)
 
     image = Image.new('RGB', (image_width, image_height), background_color)
@@ -127,21 +123,22 @@ def activity_data_image(date, distance, duree, montee, speed):
     duree = affichage_heure_minutes(float(duree))
     montee_text=str(int(float(montee)))+'m'
     speed_text  = str(int(float(speed)*3.6))+'km/h'
-    draw.text((10, 4), distance_text, font=distance_font, fill=text_color)
-    draw.text((10, 50), str(convert_date(date)), font=distance_font, fill=text_color)
-    draw.text((300, 54), duree, font=distance_font, fill=text_color)
-    image.paste(img_time, (240, 50))
-    draw.text((300, 4), montee_text, font=distance_font, fill=text_color)
-    image.paste(img_climb, (240, 0))
-    draw.text((500, 54), speed_text, font=distance_font, fill=text_color)
-    image.paste(img_speed, (440, 50))
+    draw.text((SIZE//5, SIZE//10), distance_text, font=distance_font, fill=text_color)
+    draw.text((SIZE//5, SIZE), str(convert_date(date)), font=distance_font, fill=text_color)
+    draw.text((6*SIZE, SIZE+SIZE//10), duree, font=distance_font, fill=text_color)
+    image.paste(img_time, (5*SIZE, SIZE))
+    draw.text((6*SIZE, SIZE//10), montee_text, font=distance_font, fill=text_color)
+    image.paste(img_climb, (5*SIZE, 0))
+    draw.text((10*SIZE, SIZE+SIZE//10), speed_text, font=distance_font, fill=text_color)
+    image.paste(img_speed, (9*SIZE, SIZE))
     
-    
-
-
 
     # Sauvegarde de l'image
-    return image
+    
+    return color_background (image)
+
+
+
 
 def lire_balise_type_gpx(nom_fichier):
     try:
@@ -164,10 +161,8 @@ def lire_balise_type_gpx(nom_fichier):
 
 def type_image(type):
     if type == "9":
-        run = Image.open("run.png")
         return run
     
-    velo = Image.open("velo.png")
     return velo
     
 def resize_image(image, max_width, max_height):
@@ -202,26 +197,39 @@ def resize_image(image, max_width, max_height):
     # Enregistrer l'image finale
     return final_image
 
-
 def combine_images(image1, image2, image3, output_path):
 
 
     # Créer une nouvelle image avec un fond blanc de dimensions 1000x1000
-    combined_image = Image.new('RGB', (1000, 1000))
+    combined_image = Image.new('RGB', (20*SIZE, 20*SIZE))
     image1 = ImageOps.flip(image1)
     # Placer la première image en haut
     combined_image.paste(image1, (0, 0))
 
     # Placer la deuxième image en bas à droite
-    combined_image.paste(image2, (200, 900))
+    combined_image.paste(image2, (4*SIZE, 18*SIZE))
 
     # Placer la troisième image en bas à gauche
-    combined_image.paste(image3, (125, 910))
+    combined_image.paste(image3, (int(2.5*SIZE), int(18.2*SIZE)))
 
     combined_image.save(output_path)
 
 CSV = 'activities.csv'
 activites = csv_to_array(CSV)
+
+def color_nb(image_noir_blanc):
+
+    color = image_couleur.resize((image_noir_blanc.width, image_noir_blanc.height))
+
+    # Conversion en masque avec canal alpha
+    masque = Image.new("L", color.size)
+    masque.paste(image_noir_blanc, (0, 0))
+
+    # Application du masque à l'image couleur
+    resultat = Image.new("RGB", color.size)
+    resultat.paste(color, (0, 0), masque)
+
+    return resultat
 
 def lire_activite(colone, ligne):
     x=0
@@ -237,16 +245,10 @@ def lire_activite(colone, ligne):
     return activites[y][x]
             
 
-img_speed = resize_image(img_speed,50, 50)
-img_climb = resize_image(img_climb,50, 50)
-img_run = resize_image(img_run,50, 50)
-img_time = resize_image(img_time,50, 50)
-img_climb = resize_image(img_climb,50, 50)
-
 
 def planche(colones, lignes):
     image_folder = "IMAGES"  # Chemin du dossier contenant les images
-    image_size = (1000, 1000)  # Taille des images individuelles
+    image_size = (20*SIZE, 20*SIZE)  # Taille des images individuelles
     grid_cols = colones  # Nombre de colonnes dans la grille
     grid_rows = lignes  # Nombre de lignes dans la grille
 
@@ -280,18 +282,73 @@ def planche(colones, lignes):
 
                 # Copier l'image sur la planche
                 board[y:y + image_size[1], x:x + image_size[0]] = image
-
     cv2.imwrite("planche.png", board)
 
+color_img = Image.open("color.jpg")
+
+def color_background (img_to_color):
+    width, height = img_to_color.size
+    b = color_img.resize((width, height), Image.LANCZOS)
+    a = color_nb(img_to_color )
+    return a
+        
 
 def create_all(nom):
+    global distance_velo
+    global distance_course
+    global vitesse_velo
+    global vitesse_course
+    global altitude_velo
+    global altitude_course
+    global nb_velo
+    global nb_course
+
     img1 = plot_gpx(repertoire + "/" + nom_fichier, lire_activite("Distance", nom_fichier[:-4]))
     img2 = activity_data_image(lire_activite("Date de l'activité", nom_fichier[:-4]), lire_activite("Distance", nom_fichier[:-4]), lire_activite("Durée de déplacement", nom_fichier[:-4]), lire_activite("Dénivelé positif", nom_fichier[:-4]), lire_activite("Vitesse moyenne", nom_fichier[:-4]))
     img3 = type_image(lire_balise_type_gpx(repertoire+"/" + nom_fichier))
-    im1 = resize_image(img1,1000, 900)
+    im1 = resize_image(img1,20*SIZE, 18*SIZE)
     im3 = resize_image(img3,75, 75)
     combine_images(im1, img2, im3, "IMAGES/"+nom_fichier[:-4]+".png")
-    
+    type = lire_balise_type_gpx(repertoire+"/" + nom_fichier)
+    if type == "1" : 
+        distance_velo = distance_velo + float(lire_activite("Distance", nom_fichier[:-4]))
+        altitude_velo = altitude_velo + float(lire_activite("Dénivelé positif", nom_fichier[:-4]))
+        vitesse_velo = vitesse_velo + float(lire_activite("Vitesse moyenne", nom_fichier[:-4]))
+        nb_velo = nb_velo+1
+    if type == "9" : 
+        distance_course =distance_course + float(lire_activite("Distance", nom_fichier[:-4]))
+        altitude_course = altitude_course + float(lire_activite("Dénivelé positif", nom_fichier[:-4]))
+        vitesse_course = vitesse_course + float(lire_activite("Vitesse moyenne", nom_fichier[:-4]))
+        nb_course = nb_course+1
+
+
+
+distance_velo = 0.0
+distance_course = 0.0
+vitesse_velo = 0.0
+vitesse_course = 0.0
+altitude_velo = 0.0
+altitude_course = 0.0
+nb_velo = 0
+nb_course = 0
+
+
+image_couleur = Image.open("color.jpg")
+
+img_speed = (Image.open("speed.png"))
+img_climb = (Image.open("climb.png"))
+img_time = (Image.open("time.png"))
+img_climb = (Image.open("climb.png"))
+run = (Image.open("run.png"))
+velo = (Image.open("velo.png"))
+
+img_speed = resize_image(img_speed,SIZE, SIZE)
+img_climb = resize_image(img_climb,SIZE, SIZE)
+img_time = resize_image(img_time,SIZE, SIZE)
+img_climb = resize_image(img_climb,SIZE, SIZE)
+img_run = resize_image(run,SIZE, SIZE)
+img_velo = resize_image(velo,SIZE, SIZE)
+
 repertoire = "GPX"
 
 for nom_fichier in os.listdir(repertoire):
@@ -300,3 +357,31 @@ for nom_fichier in os.listdir(repertoire):
         print(nom_fichier)
 
 planche(6,10)
+
+image = Image.new('RGB', (20*SIZE,5*SIZE), (0,0,0))
+font_size = int(1.5*SIZE)
+font_path = "Bangers-Regular.ttf" 
+draw = ImageDraw.Draw(image)
+distance_font = ImageFont.truetype(font_path, font_size)
+
+draw.text((SIZE, 0), "{:.1f} km".format(distance_velo/1000), font=distance_font, fill=(255,255,255))
+draw.text((SIZE, 2*SIZE), "{:.1f} km".format(distance_course/1000), font=distance_font, fill=(255,255,255))
+draw.text((11*SIZE, 0), "{:.1f} km/h".format(vitesse_velo*3.6/nb_velo), font=distance_font, fill=(255,255,255))
+draw.text((11*SIZE, 2*SIZE), "{:.1f} km/h".format(vitesse_course*3.6/nb_course), font=distance_font, fill=(255,255,255))
+draw.text((21*SIZE, 0), "{:.2f} km".format(altitude_velo/1000.0), font=distance_font, fill=(255,255,255))
+draw.text((21*SIZE, 2*SIZE), "{:.2f} km".format(altitude_course/1000.0), font=distance_font, fill=(255,255,255))
+image.paste(img_velo, (0, 0))
+image.paste(img_run, (0, 2*SIZE))
+image.paste(img_speed, (10*SIZE, 0))
+image.paste(img_speed, (10*SIZE, 2*SIZE))
+image.paste(img_climb, (20*SIZE, 0))
+image.paste(img_climb, (20*SIZE, 2*SIZE))
+
+
+image = color_nb(image)
+
+image.save("toto.png")
+
+a = color_nb(Image.open("planche.png"))
+a.save("color_planche.png")
+
