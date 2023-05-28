@@ -7,8 +7,8 @@ import csv
 import numpy as np
 import cv2
 
-SIZE = 100
-
+SIZE = 50
+POLICE = "Bangers-Regular.ttf" 
 Image.MAX_IMAGE_PIXELS = None
 
 
@@ -112,7 +112,7 @@ def activity_data_image(date, distance, duree, montee, speed):
     background_color = (0,0,0)
     text_color = (255, 255, 255)
     font_size = int(0.8*SIZE)
-    font_path = "Bangers-Regular.ttf"  # Chemin vers votre fichier de police TrueType (TTF)
+    font_path = POLICE
 
     image = Image.new('RGB', (image_width, image_height), background_color)
     draw = ImageDraw.Draw(image)
@@ -247,6 +247,7 @@ def lire_activite(colone, ligne):
 
 
 def planche(colones, lignes):
+    total_annee()
     image_folder = "IMAGES"  # Chemin du dossier contenant les images
     image_size = (20*SIZE, 20*SIZE)  # Taille des images individuelles
     grid_cols = colones  # Nombre de colonnes dans la grille
@@ -266,6 +267,8 @@ def planche(colones, lignes):
             image_path = os.path.join(image_folder, filename)
             image = cv2.imread(image_path)  # Charger l'image
             images.append(image)  # Ajouter l'image à la liste
+    image = cv2.imread("total.png")
+    images.append(image)
     board = np.zeros((board_height, board_width, 3), dtype=np.uint8)
 
     for i in range(grid_rows):
@@ -274,13 +277,8 @@ def planche(colones, lignes):
             if image_index < len(images):
                 image = images[image_index]
 
-                # Redimensionner l'image à la taille souhaitée
-
-                # Calculer les coordonnées de l'emplacement sur la planche
                 x = j * image_size[0]
                 y = i * image_size[1]
-
-                # Copier l'image sur la planche
                 board[y:y + image_size[1], x:x + image_size[0]] = image
     cv2.imwrite("planche.png", board)
 
@@ -323,12 +321,12 @@ def create_all(nom):
 
 
 
-distance_velo = 0.0
-distance_course = 0.0
-vitesse_velo = 0.0
-vitesse_course = 0.0
-altitude_velo = 0.0
-altitude_course = 0.0
+distance_velo = 0.00000001
+distance_course = 0.0000001
+vitesse_velo = 0.0000001
+vitesse_course = 0.0000001
+altitude_velo = 0.0000001
+altitude_course = 0.0000001
 nb_velo = 0
 nb_course = 0
 
@@ -356,32 +354,40 @@ for nom_fichier in os.listdir(repertoire):
         create_all(nom_fichier)
         print(nom_fichier)
 
-planche(6,10)
-
-image = Image.new('RGB', (20*SIZE,5*SIZE), (0,0,0))
-font_size = int(1.5*SIZE)
-font_path = "Bangers-Regular.ttf" 
-draw = ImageDraw.Draw(image)
-distance_font = ImageFont.truetype(font_path, font_size)
-
-draw.text((SIZE, 0), "{:.1f} km".format(distance_velo/1000), font=distance_font, fill=(255,255,255))
-draw.text((SIZE, 2*SIZE), "{:.1f} km".format(distance_course/1000), font=distance_font, fill=(255,255,255))
-draw.text((11*SIZE, 0), "{:.1f} km/h".format(vitesse_velo*3.6/nb_velo), font=distance_font, fill=(255,255,255))
-draw.text((11*SIZE, 2*SIZE), "{:.1f} km/h".format(vitesse_course*3.6/nb_course), font=distance_font, fill=(255,255,255))
-draw.text((21*SIZE, 0), "{:.2f} km".format(altitude_velo/1000.0), font=distance_font, fill=(255,255,255))
-draw.text((21*SIZE, 2*SIZE), "{:.2f} km".format(altitude_course/1000.0), font=distance_font, fill=(255,255,255))
-image.paste(img_velo, (0, 0))
-image.paste(img_run, (0, 2*SIZE))
-image.paste(img_speed, (10*SIZE, 0))
-image.paste(img_speed, (10*SIZE, 2*SIZE))
-image.paste(img_climb, (20*SIZE, 0))
-image.paste(img_climb, (20*SIZE, 2*SIZE))
 
 
-image = color_nb(image)
+def total_annee():
+    image = Image.new('RGB', (20*SIZE,20*SIZE), (0,0,0))
+    font_size = int(1.5*SIZE)
+    font_path = POLICE
+    draw = ImageDraw.Draw(image)
+    distance_font = ImageFont.truetype(font_path, font_size)
 
-image.save("toto.png")
+    draw.text((3*SIZE, 6*SIZE), "{:.1f} km".format(distance_velo/1000), font=distance_font, fill=(255,255,255))
+    draw.text((12*SIZE, 6*SIZE), "{:.1f} km".format(distance_course/1000), font=distance_font, fill=(255,255,255))
+    draw.text((3*SIZE, 8*SIZE), "{:.1f} km/h".format(vitesse_velo*3.6/nb_velo), font=distance_font, fill=(255,255,255))
+    draw.text((12*SIZE, 8*SIZE), "{:.1f} km/h".format(vitesse_course*3.6/nb_course), font=distance_font, fill=(255,255,255))
+    draw.text((3*SIZE, 10*SIZE), "{:.2f} km".format(altitude_velo/1000.0), font=distance_font, fill=(255,255,255))
+    draw.text((12*SIZE, 10*SIZE), "{:.2f} km".format(altitude_course/1000.0), font=distance_font, fill=(255,255,255))
+    image.paste(resize_image(velo, int(4.5*SIZE), 5*SIZE), (3*SIZE, 0))
+    image.paste(resize_image(run, int(5.5*SIZE), 5*SIZE), (11*SIZE, 0))
+    image.paste(img_speed, (int(1.75*SIZE), int(8.25*SIZE)))
+    image.paste(img_speed, (int(10.75*SIZE), int(8.25*SIZE)))
+    image.paste(img_climb, (int(1.75*SIZE), int(10.25*SIZE)))
+    image.paste(img_climb, (int(10.75*SIZE), int(10.25*SIZE)))
 
-a = color_nb(Image.open("planche.png"))
-a.save("color_planche.png")
 
+    image = color_nb(image)
+    image.save("total.png")
+
+    
+
+if nb_course==0:
+    nb_course =1
+if nb_velo==0:
+    nb_velo = 1
+
+
+
+planche(6, 6)
+color_nb(Image.open("planche.png")).save("color_planche.png")
