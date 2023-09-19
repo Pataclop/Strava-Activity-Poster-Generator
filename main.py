@@ -15,12 +15,14 @@ Image.MAX_IMAGE_PIXELS = None
 month_mapping = {
     'jan.': '01',
     'févr.': '02',
+    'fÃ©vr.': '02',
     'mars': '03',
     'avr.': '04',
     'mai': '05',
     'juin': '06',
     'juil.': '07',
     'août': '08',
+    'aoÃ»t': '08',
     'sept.': '09',
     'oct.': '10',
     'nov.': '11',
@@ -57,7 +59,7 @@ def generate_random_color():
 
 def plot_gpx(gpx_file, dist):
     gpx = gpxpy.parse(open(gpx_file, 'r'))
-    d = float(dist)/2000.0
+    d = float(dist.replace(",", "."))
     
     # Récupérer les coordonnées GPS
     latitudes = []
@@ -119,11 +121,12 @@ def activity_data_image(date, distance, duree, montee, speed):
 
     # Écriture de la distance totale
     distance_font = ImageFont.truetype(font_path, font_size)
-    distance_text = "{:.2f} km".format(float(distance)/1000.0)
+    distance_text = "{:.2f} km".format(float(distance.replace(",", ".")))
     duree = affichage_heure_minutes(float(duree))
     montee_text=str(int(float(montee)))+'m'
     speed_text  = str(int(float(speed)*3.6))+'km/h'
     draw.text((SIZE//5, SIZE//10), distance_text, font=distance_font, fill=text_color)
+    print("date", date)
     draw.text((SIZE//5, SIZE), str(convert_date(date)), font=distance_font, fill=text_color)
     draw.text((6*SIZE, SIZE+SIZE//10), duree, font=distance_font, fill=text_color)
     image.paste(img_time, (5*SIZE, SIZE))
@@ -232,17 +235,14 @@ def color_nb(image_noir_blanc):
     return resultat
 
 def lire_activite(colone, ligne):
-    x=0
     y=0
-    length = activites.shape[0]  # Number of rows
-    width = activites.shape[1]  # Number of columns
-    for col in range (width):
-        if activites[0][col] == colone :
-            x=col
+    length = 5000
+    width = 30
     for li in range (length):
         if activites[li][0] == ligne :
             y=li
-    return activites[y][x]
+            break
+    return activites[y][colone]
             
 
 
@@ -291,7 +291,8 @@ def color_background (img_to_color):
     return a
         
 
-def create_all(nom):
+def create_all(nom_fichier):
+    print("nom fichier" + nom_fichier)
     global distance_velo
     global distance_course
     global vitesse_velo
@@ -301,21 +302,21 @@ def create_all(nom):
     global nb_velo
     global nb_course
 
-    img1 = plot_gpx(repertoire + "/" + nom_fichier, lire_activite("Distance", nom_fichier[:-4]))
-    img2 = activity_data_image(lire_activite("Date de l'activité", nom_fichier[:-4]), lire_activite("Distance", nom_fichier[:-4]), lire_activite("Durée de déplacement", nom_fichier[:-4]), lire_activite("Dénivelé positif", nom_fichier[:-4]), lire_activite("Vitesse moyenne", nom_fichier[:-4]))
+    img1 = plot_gpx(repertoire + "/" + nom_fichier, lire_activite(6, nom_fichier[:-4]))
+    img2 = activity_data_image(lire_activite(1, nom_fichier[:-4]), lire_activite(6, nom_fichier[:-4]), lire_activite(15, nom_fichier[:-4]), lire_activite(19, nom_fichier[:-4]), lire_activite(18, nom_fichier[:-4]))
     img3 = type_image(lire_balise_type_gpx(repertoire+"/" + nom_fichier))
     im1 = resize_image(img1,20*SIZE, 18*SIZE)
     im3 = resize_image(img3,75, 75)
     combine_images(im1, img2, im3, "IMAGES/"+nom_fichier[:-4]+".png")
     type = lire_balise_type_gpx(repertoire+"/" + nom_fichier)
     if type == "1" : 
-        distance_velo = distance_velo + float(lire_activite("Distance", nom_fichier[:-4]))
-        altitude_velo = altitude_velo + float(lire_activite("Dénivelé positif", nom_fichier[:-4]))
-        vitesse_velo = vitesse_velo + float(lire_activite("Vitesse moyenne", nom_fichier[:-4]))
+        distance_velo = distance_velo + float(lire_activite(6, nom_fichier[:-4]))
+        altitude_velo = altitude_velo + float(lire_activite(19, nom_fichier[:-4]))
+        vitesse_velo = vitesse_velo + float(lire_activite(18, nom_fichier[:-4]))
         nb_velo = nb_velo+1
     if type == "9" : 
-        distance_course =distance_course + float(lire_activite("Distance", nom_fichier[:-4]))
-        altitude_course = altitude_course + float(lire_activite("Dénivelé positif", nom_fichier[:-4]))
+        distance_course =distance_course + float(lire_activite(6, nom_fichier[:-4]))
+        altitude_course = altitude_course + float(lire_activite(19, nom_fichier[:-4]))
         vitesse_course = vitesse_course + float(lire_activite("Vitesse moyenne", nom_fichier[:-4]))
         nb_course = nb_course+1
 
