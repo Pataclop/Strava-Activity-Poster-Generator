@@ -4,5 +4,10 @@ IMAGES/*
 GPX/*
 *.png
 image sample/.DS_Store
-.DS_Store
-activities.csv
+*.DS_Store
+*.csv
+*.gz
+*.pdf
+*.zip
+*.jpg
+*.csv#
