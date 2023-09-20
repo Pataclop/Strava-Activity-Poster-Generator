@@ -6,6 +6,8 @@ import re
 import csv
 import numpy as np
 import cv2
+import zipfile
+import glob
 
 SIZE = 50
 POLICE = "Bangers-Regular.ttf" 
@@ -140,8 +142,12 @@ def activity_data_image(date, distance, duree, montee, speed):
     
     return color_background (image)
 
-
-
+def unzip_file():
+    chemin_repertoire = 'EXPORT_ZIP'
+    fichiers_zip = glob.glob(f'{chemin_repertoire}/*.zip')
+    for fichier_zip in fichiers_zip:
+        with zipfile.ZipFile(fichier_zip, 'r') as zip_ref:
+            zip_ref.extractall(chemin_repertoire)
 
 def lire_balise_type_gpx(nom_fichier):
     try:
@@ -217,9 +223,6 @@ def combine_images(image1, image2, image3, output_path):
 
     combined_image.save(output_path)
 
-CSV = 'activities.csv'
-activites = csv_to_array(CSV)
-
 def color_nb(image_noir_blanc):
 
     color = image_couleur.resize((image_noir_blanc.width, image_noir_blanc.height))
@@ -243,8 +246,6 @@ def lire_activite(colone, ligne):
             y=li
             break
     return activites[y][colone]
-            
-
 
 def planche(colones, lignes):
     total_annee()
@@ -290,7 +291,6 @@ def color_background (img_to_color):
     a = color_nb(img_to_color )
     return a
         
-
 def create_all(nom_fichier):
     print("nom fichier" + nom_fichier)
     global distance_velo
@@ -321,6 +321,20 @@ def create_all(nom_fichier):
         nb_course = nb_course+1
 
 
+unzip_file()
+
+
+
+# Vérifiez si le répertoire "IMAGES" n'existe pas déjà
+if not os.path.exists('IMAGES'):
+    # Créez le répertoire "IMAGES" s'il n'existe pas encore
+    os.makedirs('IMAGES')
+
+
+
+
+CSV = 'EXPORT_ZIP/activities.csv'
+activites = csv_to_array(CSV)
 
 distance_velo = 0.00000001
 distance_course = 0.0000001
@@ -348,12 +362,19 @@ img_climb = resize_image(img_climb,SIZE, SIZE)
 img_run = resize_image(run,SIZE, SIZE)
 img_velo = resize_image(velo,SIZE, SIZE)
 
-repertoire = "GPX"
+
+
+
+
+
+repertoire = "EXPORT_ZIP/activities"
 
 for nom_fichier in os.listdir(repertoire):
     if nom_fichier.endswith(".gpx"):
         create_all(nom_fichier)
         print(nom_fichier)
+
+
 
 
 
