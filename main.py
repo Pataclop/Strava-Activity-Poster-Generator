@@ -8,6 +8,10 @@ import numpy as np
 import cv2
 import zipfile
 import glob
+import datetime
+import tkinter as tk
+from tkinter import ttk
+from datetime import datetime
 
 SIZE = 50
 POLICE = "Bangers-Regular.ttf" 
@@ -128,7 +132,7 @@ def activity_data_image(date, distance, duree, montee, speed):
     montee_text=str(int(float(montee)))+'m'
     speed_text  = str(int(float(speed)*3.6))+'km/h'
     draw.text((SIZE//5, SIZE//10), distance_text, font=distance_font, fill=text_color)
-    print("date", date)
+    #print("date", date)
     draw.text((SIZE//5, SIZE), str(convert_date(date)), font=distance_font, fill=text_color)
     draw.text((6*SIZE, SIZE+SIZE//10), duree, font=distance_font, fill=text_color)
     image.paste(img_time, (5*SIZE, SIZE))
@@ -292,7 +296,7 @@ def color_background (img_to_color):
     return a
         
 def create_all(nom_fichier):
-    print("nom fichier" + nom_fichier)
+    #print("nom fichier" + nom_fichier)
     global distance_velo
     global distance_course
     global vitesse_velo
@@ -301,7 +305,11 @@ def create_all(nom_fichier):
     global altitude_course
     global nb_velo
     global nb_course
-
+    date_moche = lire_activite(1, nom_fichier[:-4]).replace("Ã\xa0", "a")
+    annee = date_moche.split()[2]
+    if annee != ANNEE :
+        return
+    print (date_moche)
     img1 = plot_gpx(repertoire + "/" + nom_fichier, lire_activite(6, nom_fichier[:-4]))
     img2 = activity_data_image(lire_activite(1, nom_fichier[:-4]), lire_activite(6, nom_fichier[:-4]), lire_activite(15, nom_fichier[:-4]), lire_activite(19, nom_fichier[:-4]), lire_activite(18, nom_fichier[:-4]))
     img3 = type_image(lire_balise_type_gpx(repertoire+"/" + nom_fichier))
@@ -321,14 +329,31 @@ def create_all(nom_fichier):
         nb_course = nb_course+1
 
 
-unzip_file()
-
 
 
 # Vérifiez si le répertoire "IMAGES" n'existe pas déjà
 if not os.path.exists('IMAGES'):
     # Créez le répertoire "IMAGES" s'il n'existe pas encore
     os.makedirs('IMAGES')
+
+
+
+# Vérifiez si le répertoire "IMAGES" n'existe pas déjà
+if not os.path.exists('EXPORT_ZIP'):
+    # Créez le répertoire "IMAGES" s'il n'existe pas encore
+    os.makedirs('EXPORT_ZIP')
+
+
+
+
+files = [f for f in os.listdir() if f.endswith(".zip")]
+for f in files:
+    os.rename(f, os.path.join('EXPORT_ZIP', f))
+
+unzip_file()
+
+
+
 
 
 
@@ -362,9 +387,36 @@ img_climb = resize_image(img_climb,SIZE, SIZE)
 img_run = resize_image(run,SIZE, SIZE)
 img_velo = resize_image(velo,SIZE, SIZE)
 
+ANNEE = None
 
+def choisir_annee():
+    global ANNEE  # Permet d'accéder à la variable globale ANNEE
+    def afficher_annee():
+        global ANNEE
+        ANNEE = choix_annee.get()
+        fenetre.destroy()  # Ferme la fenêtre
+    # Créer une fenêtre
+    fenetre = tk.Tk()
+    fenetre.title("Choisir une année")
+    # Obtenir l'année actuelle
+    date_actuelle = datetime.now()
+    annee_actuelle = date_actuelle.year
+    # Créer une liste d'années de 2020 à l'année actuelle
+    annees = [str(annee) for annee in range(2010, annee_actuelle + 1)]
+    # Créer un menu déroulant
+    choix_annee = ttk.Combobox(fenetre, values=annees)
+    choix_annee.set(str(annee_actuelle))  # Définir l'année actuelle comme valeur par défaut
+    choix_annee.pack(padx=20, pady=20)
+    # Bouton pour afficher l'année sélectionnée
+    bouton_afficher = tk.Button(fenetre, text="Afficher", command=afficher_annee)
+    bouton_afficher.pack()
 
+    # Exécuter la boucle principale de l'interface graphique
+    fenetre.mainloop()
 
+# Appeler la fonction pour ouvrir la fenêtre de sélection d'année
+choisir_annee()
+print("Année sélectionnée :", ANNEE)  # Affiche l'
 
 
 repertoire = "EXPORT_ZIP/activities"
@@ -372,7 +424,7 @@ repertoire = "EXPORT_ZIP/activities"
 for nom_fichier in os.listdir(repertoire):
     if nom_fichier.endswith(".gpx"):
         create_all(nom_fichier)
-        print(nom_fichier)
+        #print(nom_fichier)
 
 
 
