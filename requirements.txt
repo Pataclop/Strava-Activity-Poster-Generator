@@ -1,0 +1,3 @@
+gpxpy
+opencv-python
+tk

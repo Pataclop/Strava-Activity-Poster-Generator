@@ -11,3 +11,4 @@ image sample/.DS_Store
 *.zip
 *.jpg
 *.csv#
+unzip/messaging.json
