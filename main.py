@@ -13,6 +13,7 @@ import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
 import shutil
+import threading
 
 
 SIZE = 50
@@ -28,7 +29,7 @@ nb_velo = 0
 nb_course = 0
 ANNEE = None
 repertoire = "unzip/activities"
-
+image_blanche = Image.new('RGB', (1, 1), (255, 255, 255))
 
 image_couleur = Image.open("color.jpg")
 img_speed = (Image.open("speed.png"))
@@ -227,8 +228,8 @@ def combine_images(image1, image2, image3, output_path):
     combined_image.paste(image3, (int(2.5*SIZE), int(18.2*SIZE)))
     combined_image.save(output_path)
 
-def color_nb(image_noir_blanc):
-    color = image_couleur.resize((image_noir_blanc.width, image_noir_blanc.height))
+def color_nb(image_noir_blanc, image):
+    color = image.resize((image_noir_blanc.width, image_noir_blanc.height))
     masque = Image.new("L", color.size)
     masque.paste(image_noir_blanc, (0, 0))
     resultat = Image.new("RGB", color.size)
@@ -237,8 +238,8 @@ def color_nb(image_noir_blanc):
 
 def color_background (img_to_color):
     width, height = img_to_color.size
-    b = image_couleur.resize((width, height), Image.LANCZOS)
-    a = color_nb(img_to_color )
+    b = image_blanche.resize((width, height), Image.LANCZOS)
+    a = color_nb(img_to_color, image_blanche)
     return a
 
 def type_image(type):
@@ -269,7 +270,7 @@ def create_all(nom_fichier):
     date_moche = lire_activite(1, nom_fichier[:-4]).replace("Ã\xa0", "a")
     annee = date_moche.split()[2]
     if annee != ANNEE :
-        return
+        return 0
     print (date_moche)
     img1 = plot_gpx(repertoire + "/" + nom_fichier, lire_activite(6, nom_fichier[:-4]))
     img2 = activity_data_image(lire_activite(1, nom_fichier[:-4]), lire_activite(6, nom_fichier[:-4]), lire_activite(15, nom_fichier[:-4]), lire_activite(19, nom_fichier[:-4]), lire_activite(18, nom_fichier[:-4]))
@@ -288,6 +289,7 @@ def create_all(nom_fichier):
         altitude_course = altitude_course + float(lire_activite(19, nom_fichier[:-4]))
         vitesse_course = vitesse_course + float(lire_activite("Vitesse moyenne", nom_fichier[:-4]))
         nb_course = nb_course+1
+    return 1
 
 def planche(colones, lignes):
     total_annee()
@@ -324,30 +326,10 @@ def planche(colones, lignes):
                 y = i * image_size[1]
                 board[y:y + image_size[1], x:x + image_size[0]] = image
     cv2.imwrite("planche.png", board)
-
-def choisir_annee():
-    global ANNEE  # Permet d'accéder à la variable globale ANNEE
-    def afficher_annee():
-        global ANNEE
-        ANNEE = choix_annee.get()
-        fenetre.destroy()  # Ferme la fenêtre
-    # Créer une fenêtre
-    fenetre = tk.Tk()
-    fenetre.title("Choisir une année")
-    # Obtenir l'année actuelle
-    date_actuelle = datetime.now()
-    annee_actuelle = date_actuelle.year
-    # Créer une liste d'années de 2020 à l'année actuelle
-    annees = [str(annee) for annee in range(2010, annee_actuelle + 1)]
-    # Créer un menu déroulant
-    choix_annee = ttk.Combobox(fenetre, values=annees)
-    choix_annee.set(str(annee_actuelle))  # Définir l'année actuelle comme valeur par défaut
-    choix_annee.pack(padx=20, pady=20)
-    # Bouton pour afficher l'année sélectionnée
-    bouton_afficher = tk.Button(fenetre, text="Afficher", command=afficher_annee)
-    bouton_afficher.pack()
-    fenetre.mainloop()
-
+    color_nb(Image.open("planche.png"), image_couleur).save("color_planche.png")
+    img = Image.open("color_planche.png")
+    img.show()
+    
 def total_annee():
     image = Image.new('RGB', (20*SIZE,20*SIZE), (0,0,0))
     font_size = int(1.5*SIZE)
@@ -368,11 +350,47 @@ def total_annee():
     image.paste(img_climb, (int(1.75*SIZE), int(10.25*SIZE)))
     image.paste(img_climb, (int(10.75*SIZE), int(10.25*SIZE)))
 
-    image = color_nb(image)
+    image = color_nb(image, image_blanche)
     image.save("total.png")
 
 
-shutil.rmtree('IMAGES')
+
+
+def loop_create_all():
+    global nb_course
+    global nb_velo
+    global ANNEE
+    ANNEE = choix_annee.get()
+    print(ANNEE)
+    total = 0
+    nb = len(os.listdir(repertoire))
+    for nom_fichier in os.listdir(repertoire):
+        if nom_fichier.endswith(".gpx"):
+            total += create_all(nom_fichier)
+            progress_bar['value'] += 100/nb
+            fenetre.update_idletasks()
+    progress_bar.destroy()
+    nb_course = max(nb_course, 1)
+    nb_velo = max(nb_velo, 1)
+    label = tk.Label(fenetre, text="total :"+ str(total))
+    label.pack()
+
+    l_hauteur = tk.Label(fenetre, text="hauteur")
+    l_hauteur.pack()
+    height_entry = tk.Entry(fenetre)
+    height_entry.pack()
+    l_largeur = tk.Label(fenetre, text="largeur")
+    l_largeur.pack()
+    width_entry = tk.Entry(fenetre)
+    width_entry.pack()
+    go_button = tk.Button(fenetre, text="GO", command=lambda: planche(int(width_entry.get()), int(height_entry.get())))
+    go_button.pack()
+    
+
+
+
+if os.path.exists("IMAGES"):
+    shutil.rmtree('IMAGES')
 os.makedirs('IMAGES')
 
 extract_zip_file()
@@ -386,17 +404,27 @@ img_climb = resize_image(img_climb,SIZE, SIZE)
 img_run = resize_image(run,SIZE, SIZE)
 img_velo = resize_image(velo,SIZE, SIZE)
 
-choisir_annee()
-print("Année sélectionnée :", ANNEE)
 
 
-for nom_fichier in os.listdir(repertoire):
-    if nom_fichier.endswith(".gpx"):
-        create_all(nom_fichier)
 
-nb_course = max(nb_course, 1)
-nb_velo = max(nb_velo, 1)
+fenetre = tk.Tk()# Créer une fenêtre
+fenetre.title("Strave Poster Creator")
+# Obtenir l'année actuelle
+date_actuelle = datetime.now()
+annee_actuelle = date_actuelle.year
+annees = [str(annee) for annee in range(2010, annee_actuelle + 1)]
+# Créer un menu déroulant
+choix_annee = ttk.Combobox(fenetre, values=annees)
+choix_annee.set(str(annee_actuelle))  # Définir l'année actuelle comme valeur par défaut
+choix_annee.pack(padx=20, pady=20)
+# Bouton pour afficher l'année sélectionnée
+bouton_afficher = tk.Button(fenetre, text="Create !", command=loop_create_all)
+bouton_afficher.pack()
+nb = len(os.listdir(repertoire))
+progress_bar = ttk.Progressbar(fenetre, orient="horizontal", length=nb, mode="determinate")
+progress_bar.pack(pady=10)
 
-planche(7, 7)
 
-color_nb(Image.open("planche.png")).save("color_planche.png")
+
+
+fenetre.mainloop()
