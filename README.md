@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-The Strava Activity Poster Generator is a project that takes Strava data exported by the user and creates posters with all the activities. This allows users to visualize their activities in a visually appealing and personalized way.
+takes Strava data exported by the user and creates posters with all the activities. This allows users to visualize their activities in a visually appealing and personalized way.
 
 ![Image Sample](image%20sample/planche.jpg)
 
@@ -23,13 +23,10 @@ The Strava Activity Poster Generator is a Python-based project that leverages St
 To export your data from Strava, follow these steps:
 
 1. Log in to your Strava account.
-2. Go to [www.strava.com](https://www.strava.com) and navigate to your profile page.
-3. Click on "Dashboard" in the top menu.
-4. On the left sidebar, click on "Settings."
-5. Under the "My Profile" section, click on "Download or Delete Your Account."
-6. On the "Download Your Account" page, click on "Request Your Archive."
-7. Strava will send you an email with a download link. Click on the link in the email to download your data.
-8. Extract the downloaded ZIP file to access your exported data.
+2. Go to [https://www.strava.com/athlete/delete_your_account](https://www.strava.com/athlete/delete_your_account) 
+3. Click on "Request Your Archive."
+4. Strava will send you an email with a download link. Click on the link in the email to download your data.
+
 
 ## Usage
 
